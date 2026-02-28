@@ -5,6 +5,7 @@ from app.auth import get_password_hash
 
 
 def run():
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
 
@@ -21,9 +22,16 @@ def run():
     db.add_all(users)
 
     areas = [
-        Area(name="Raw Prep", zone="Zone 1", atp_threshold=35, tpc_threshold=100, chemical_target_pct=95, allergen_enabled=True),
-        Area(name="Cook Line", zone="Zone 2", atp_threshold=30, tpc_threshold=80, chemical_target_pct=98, allergen_enabled=False),
-        Area(name="Packing", zone="Zone 3", atp_threshold=25, tpc_threshold=60, chemical_target_pct=97, allergen_enabled=True),
+        Area(name="Final Assembly", zone="Production", atp_threshold=30, tpc_threshold=90, chemical_target_pct=95, allergen_enabled=True),
+        Area(name="Make and Pack", zone="Production", atp_threshold=30, tpc_threshold=90, chemical_target_pct=95, allergen_enabled=True),
+        Area(name="Wash and Pack", zone="Production", atp_threshold=30, tpc_threshold=90, chemical_target_pct=95, allergen_enabled=True),
+        Area(name="Pick and Pack", zone="Production", atp_threshold=30, tpc_threshold=90, chemical_target_pct=95, allergen_enabled=True),
+        Area(name="Inbound", zone="Logistics", atp_threshold=35, tpc_threshold=100, chemical_target_pct=95, allergen_enabled=False),
+        Area(name="Commissary International", zone="Commissary", atp_threshold=30, tpc_threshold=90, chemical_target_pct=95, allergen_enabled=True),
+        Area(name="Commissary Domestic", zone="Commissary", atp_threshold=30, tpc_threshold=90, chemical_target_pct=95, allergen_enabled=True),
+        Area(name="Warehouse and Receiving", zone="Logistics", atp_threshold=35, tpc_threshold=100, chemical_target_pct=95, allergen_enabled=False),
+        Area(name="Hot Kitchen", zone="Kitchen", atp_threshold=25, tpc_threshold=80, chemical_target_pct=96, allergen_enabled=True),
+        Area(name="Central Recipe Assembly", zone="Kitchen", atp_threshold=25, tpc_threshold=80, chemical_target_pct=96, allergen_enabled=True),
     ]
     db.add_all(areas)
 
@@ -38,8 +46,8 @@ def run():
     staff1 = db.query(User).filter_by(username="staff1").first()
     staff2 = db.query(User).filter_by(username="staff2").first()
     qa = db.query(User).filter_by(username="qa1").first()
-    area1 = db.query(Area).filter_by(name="Raw Prep").first()
-    area2 = db.query(Area).filter_by(name="Cook Line").first()
+    area1 = db.query(Area).filter_by(name="Final Assembly").first()
+    area2 = db.query(Area).filter_by(name="Make and Pack").first()
     shift_a = db.query(Shift).filter_by(name="Shift A").first()
     shift_b = db.query(Shift).filter_by(name="Shift B").first()
 
@@ -89,11 +97,11 @@ def run():
     db.commit()
 
     first_task = all_tasks[0]
-    dev = Deviation(task_id=first_task.id, category="ATP Failure", description="High ATP reading", severity="Major", is_repeat=True)
+    dev = Deviation(task_id=first_task.id, area_id=first_task.area_id, category="ATP Failure", description="High ATP reading", severity="Major", is_repeat=True)
     db.add(dev)
     db.commit()
     db.refresh(dev)
-    db.add(CorrectiveAction(deviation_id=dev.id, action_description="Reclean and retrain staff", owner_id=staff1.id, due_date=date.today() - timedelta(days=2), closed_date=date.today(), status="Closed"))
+    db.add(CorrectiveAction(deviation_id=dev.id, action_description="Reclean and retrain staff", owner_id=staff1.id, due_date=date.today() - timedelta(days=2), closed_date=date.today(), status="Closed", performed_by_initials="SS"))
     db.commit()
     print("Seed complete")
 
