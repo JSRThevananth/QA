@@ -80,7 +80,8 @@ class Deviation(Base):
     __tablename__ = "deviations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    task_id: Mapped[int] = mapped_column(ForeignKey("sanitation_tasks.id"), nullable=False)
+    task_id: Mapped[int | None] = mapped_column(ForeignKey("sanitation_tasks.id"), nullable=True)
+    area_id: Mapped[int] = mapped_column(ForeignKey("areas.id"), nullable=False)
     category: Mapped[str] = mapped_column(String(60), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     severity: Mapped[str] = mapped_column(String(20), nullable=False)
@@ -89,6 +90,7 @@ class Deviation(Base):
     status: Mapped[str] = mapped_column(String(20), default="Open")
 
     task = relationship("SanitationTask", back_populates="deviations")
+    area = relationship("Area")
     corrective_actions = relationship("CorrectiveAction", back_populates="deviation")
 
 
@@ -102,5 +104,6 @@ class CorrectiveAction(Base):
     due_date: Mapped[date] = mapped_column(Date, nullable=False)
     closed_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="Open")
+    performed_by_initials: Mapped[str] = mapped_column(String(12), default="")
 
     deviation = relationship("Deviation", back_populates="corrective_actions")

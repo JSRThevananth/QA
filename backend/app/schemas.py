@@ -87,7 +87,8 @@ class VerificationOut(VerificationCreate):
 
 
 class DeviationCreate(BaseModel):
-    task_id: int
+    task_id: int | None = None
+    area_id: int
     category: str
     description: str
     severity: str
@@ -110,6 +111,7 @@ class CorrectiveActionCreate(BaseModel):
     due_date: date
     closed_date: date | None = None
     status: str = "Open"
+    performed_by_initials: str = ""
 
 
 class CorrectiveActionOut(CorrectiveActionCreate):
